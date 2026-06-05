@@ -1,33 +1,30 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
-import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { formatCOP } from '../utils/format';
-import { X, Minus, Plus, ShoppingBag, User } from 'lucide-react';
+import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
 
 const CartDrawer = () => {
   const { cartItems, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart, clearCart } = useCart();
-  const { user } = useAuth();
   const navigate = useNavigate();
 
   const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleCheckout = () => {
-    alert('¡Gracias por tu compra simulada en NUVÉ!');
-    clearCart();
-    setIsCartOpen(false);
-  };
-
-  const handleWhatsAppCheckout = () => {
+    // Mostramos el anuncio al usuario
+    alert('¡Hola! Las compras automáticas en la tienda aún no están habilitadas. Serás redirigido a nuestro WhatsApp para finalizar tu pedido de forma personalizada.');
+    
+    // Generamos el texto para WhatsApp
     const text = cartItems.map(item => `${item.quantity}x ${item.name}`).join('%0A');
     const totalText = `%0ATotal: ${formatCOP(total)}`;
-    const message = `Hola NUVÉ, quiero comprar:%0A${text}${totalText}`;
+    const message = `Hola NUVÉ, me gustaría hacer este pedido:%0A%0A${text}%0A${totalText}`;
+    
+    // Redirigimos a WhatsApp (puedes cambiar el número aquí)
     window.open(`https://wa.me/573000000000?text=${message}`, '_blank');
-  };
-
-  const handleLoginRedirect = () => {
+    
+    // Limpiamos el carrito y lo cerramos
+    clearCart();
     setIsCartOpen(false);
-    navigate('/login');
   };
 
   if (!isCartOpen) return null;
@@ -111,34 +108,16 @@ const CartDrawer = () => {
               <span>{formatCOP(total)}</span>
             </div>
             
-            {user ? (
-              <button className="btn-primary" style={{ width: '100%', padding: '1rem' }} onClick={handleCheckout}>
-                Finalizar Compra
-              </button>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <button className="btn-primary" style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} onClick={handleLoginRedirect}>
-                  <User size={18} /> Iniciar Sesión para comprar
-                </button>
-                <div style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--color-text-light)', margin: '0.5rem 0' }}>o si prefieres:</div>
-                <button 
-                  onClick={handleWhatsAppCheckout}
-                  style={{ 
-                    width: '100%', 
-                    padding: '1rem', 
-                    background: '#25D366', 
-                    color: 'white', 
-                    borderRadius: 'var(--radius-full)', 
-                    fontWeight: 'bold',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '0.5rem'
-                  }}>
-                  Comprar por WhatsApp sin cuenta
-                </button>
-              </div>
-            )}
+            <button 
+              className="btn-primary" 
+              style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }} 
+              onClick={handleCheckout}
+            >
+              Finalizar Compra
+            </button>
+            <p style={{ textAlign: 'center', fontSize: '0.8rem', color: 'var(--color-text-light)', marginTop: '0.8rem' }}>
+              Al finalizar, serás redirigido a WhatsApp para coordinar el pago.
+            </p>
           </div>
         )}
       </div>

@@ -33,13 +33,14 @@ export const ProductProvider = ({ children }) => {
   };
 
   const updateProduct = (id, updatedFields) => {
-    const updated = products.map(p => p.id === id ? { ...p, ...updatedFields } : p);
+    // Forzamos la comparación a String para evitar fallos de edición entre id numérico y de texto
+    const updated = products.map(p => String(p.id) === String(id) ? { ...p, ...updatedFields } : p);
     setProducts(updated);
     localStorage.setItem('nuve_products', JSON.stringify(updated));
   };
 
   const deleteProduct = (id) => {
-    const updated = products.filter(p => p.id !== id);
+    const updated = products.filter(p => String(p.id) !== String(id));
     setProducts(updated);
     localStorage.setItem('nuve_products', JSON.stringify(updated));
   };
