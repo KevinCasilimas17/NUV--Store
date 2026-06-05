@@ -1,0 +1,89 @@
+import React from 'react';
+import { ShoppingBag, LogOut, Settings } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
+import Logo from './Logo';
+
+const Navbar = ({ onSearchChange }) => {
+  const { user, logout } = useAuth();
+  const { cartCount, setIsCartOpen } = useCart();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  return (
+    <nav className="glass-panel" style={{
+      position: 'sticky',
+      top: 0,
+      zIndex: 100,
+      padding: '1rem 0',
+      borderBottom: '1px solid rgba(255,255,255,0.5)',
+      marginBottom: '2rem'
+    }}>
+      <div className="container" style={{
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
+          <Logo size="small" />
+          {onSearchChange && (
+            <input 
+              type="text" 
+              placeholder="Buscar productos..." 
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="input-field"
+              style={{ width: '250px', display: 'none' }} // Se podría mostrar en desktop
+            />
+          )}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <span style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--color-text)' }}>
+            Bienvenida/o, {user?.name || user?.email?.split('@')[0]}
+          </span>
+          
+          {user?.role === 'admin' && (
+            <button onClick={() => navigate('/admin')} style={{ color: 'var(--color-accent)' }}>
+              <Settings size={20} />
+            </button>
+          )}
+
+          <button onClick={() => setIsCartOpen(true)} style={{ position: 'relative', color: 'var(--color-accent)' }}>
+            <ShoppingBag size={24} />
+            {cartCount > 0 && (
+              <span style={{
+                position: 'absolute',
+                top: '-5px',
+                right: '-8px',
+                background: 'var(--color-primary)',
+                color: 'white',
+                borderRadius: '50%',
+                width: '18px',
+                height: '18px',
+                fontSize: '10px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: 'bold',
+                border: '1px solid white'
+              }}>
+                {cartCount}
+              </span>
+            )}
+          </button>
+          
+          <button onClick={handleLogout} style={{ color: 'var(--color-text-light)' }} title="Cerrar sesión">
+            <LogOut size={20} />
+          </button>
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default Navbar;

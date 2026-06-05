@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap');
+
+:root {
+  --color-primary: #ffd1dc; /* Pastel pink */
+  --color-secondary: #d8a1c4; /* Old rose */
+  --color-accent: #6d4c41; /* Soft chocolate brown */
+  --color-text: #3e2723; /* Dark chocolate for contrast */
+  --color-text-light: #5d4037;
+  --color-bg-base: #fffbf5; /* Warm cream */
+  --color-white: #ffffff;
+  
+  --font-main: 'Outfit', sans-serif;
+  --font-serif: 'Playfair Display', serif;
+
+  --shadow-sm: 0 2px 8px rgba(109, 76, 65, 0.08);
+  --shadow-md: 0 4px 16px rgba(109, 76, 65, 0.12);
+  --shadow-lg: 0 8px 24px rgba(109, 76, 65, 0.15);
+  
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-full: 9999px;
+  
+  --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  color: var(--color-text);
+  background-color: var(--color-bg-base);
+  /* Fluffy cloud bokeh effect background */
+  background-image: 
+    radial-gradient(circle at 15% 50%, rgba(255, 209, 220, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 85% 30%, rgba(216, 161, 196, 0.3) 0%, transparent 50%),
+    radial-gradient(circle at 50% 80%, rgba(255, 251, 245, 0.8) 0%, transparent 50%);
+  background-attachment: fixed;
+  background-size: 150% 150%;
+  animation: floatBackground 15s ease-in-out infinite alternate;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+@keyframes floatBackground {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  color: var(--color-accent);
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  font-family: var(--font-main);
+  cursor: pointer;
+  border: none;
+  background: none;
+  transition: var(--transition);
+}
+
+/* Base UI classes */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: var(--color-white);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  filter: brightness(1.05);
+}
+
+.btn-outline {
+  border: 2px solid var(--color-secondary);
+  color: var(--color-secondary);
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  background-color: transparent;
+}
+
+.btn-outline:hover {
+  background-color: var(--color-secondary);
+  color: var(--color-white);
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(109, 76, 65, 0.2);
+  background: rgba(255, 255, 255, 0.8);
+  font-family: var(--font-main);
+  color: var(--color-text);
+  outline: none;
+  transition: var(--transition);
+}
+
+.input-field:focus {
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px rgba(216, 161, 196, 0.2);
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: var(--shadow-md);
+}
+
+/* Utility to show something is hidden */
+.hidden {
+  display: none !important;
+}
