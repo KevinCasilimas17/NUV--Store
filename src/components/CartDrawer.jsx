@@ -2,6 +2,7 @@ import React from 'react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { formatCOP } from '../utils/format';
 import { X, Minus, Plus, ShoppingBag, User } from 'lucide-react';
 
 const CartDrawer = () => {
@@ -19,9 +20,8 @@ const CartDrawer = () => {
 
   const handleWhatsAppCheckout = () => {
     const text = cartItems.map(item => `${item.quantity}x ${item.name}`).join('%0A');
-    const totalText = `%0ATotal: $${total.toFixed(2)}`;
+    const totalText = `%0ATotal: ${formatCOP(total)}`;
     const message = `Hola NUVÉ, quiero comprar:%0A${text}${totalText}`;
-    // Usaremos un número de placeholder porque no se especificó uno
     window.open(`https://wa.me/573000000000?text=${message}`, '_blank');
   };
 
@@ -91,7 +91,7 @@ const CartDrawer = () => {
                     <button onClick={() => removeFromCart(item.id)} style={{ color: 'var(--color-text-light)' }}><X size={16} /></button>
                   </div>
                   <div style={{ color: 'var(--color-accent)', fontWeight: 'bold', margin: '0.5rem 0' }}>
-                    ${parseFloat(item.price).toFixed(2)}
+                    {formatCOP(item.price)}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     <button onClick={() => updateQuantity(item.id, item.quantity - 1)} style={{ padding: '0.2rem', background: 'rgba(216, 161, 196, 0.2)', borderRadius: '4px' }}><Minus size={14} /></button>
@@ -108,7 +108,7 @@ const CartDrawer = () => {
           <div style={{ padding: '1.5rem', borderTop: '1px solid rgba(109, 76, 65, 0.1)', background: 'var(--color-white)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', fontSize: '1.2rem', fontWeight: 'bold' }}>
               <span>Total</span>
-              <span>${total.toFixed(2)}</span>
+              <span>{formatCOP(total)}</span>
             </div>
             
             {user ? (

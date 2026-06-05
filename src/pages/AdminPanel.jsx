@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useProducts } from '../context/ProductContext';
+import { formatCOP } from '../utils/format';
 import { Plus, Edit, Trash, Image as ImageIcon } from 'lucide-react';
 
 const AdminPanel = () => {
@@ -112,8 +113,7 @@ const AdminPanel = () => {
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <input
                   type="number"
-                  step="0.01"
-                  placeholder="Precio"
+                  placeholder="Precio (COP)"
                   className="input-field"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: e.target.value })}
@@ -194,7 +194,7 @@ const AdminPanel = () => {
                     <td style={{ padding: '1rem 0', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-text-light)' }}>
                       {product.description || 'Sin descripción'}
                     </td>
-                    <td style={{ padding: '1rem 0' }}>${parseFloat(product.price).toFixed(2)}</td>
+                    <td style={{ padding: '1rem 0' }}>{formatCOP(product.price)}</td>
                     <td style={{ padding: '1rem 0' }}>
                       <button onClick={() => handleEdit(product)} style={{ color: 'var(--color-secondary)', marginRight: '1rem' }} title="Editar">
                         <Edit size={18} />

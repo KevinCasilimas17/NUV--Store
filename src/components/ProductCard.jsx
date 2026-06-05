@@ -1,9 +1,16 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
 import { Plus } from 'lucide-react';
+import { formatCOP } from '../utils/format';
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
+  const navigate = useNavigate();
+
+  const handleCardClick = () => {
+    navigate(`/product/${product.id}`);
+  };
 
   return (
     <div className="glass-panel" style={{
@@ -12,8 +19,9 @@ const ProductCard = ({ product }) => {
       transition: 'var(--transition)',
       display: 'flex',
       flexDirection: 'column',
-      height: '100%'
-    }}>
+      height: '100%',
+      cursor: 'pointer'
+    }} onClick={handleCardClick}>
       <div style={{
         height: '250px',
         overflow: 'hidden',
@@ -55,12 +63,15 @@ const ProductCard = ({ product }) => {
         )}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
           <span style={{ fontWeight: '700', fontSize: '1.2rem', color: 'var(--color-text)' }}>
-            ${parseFloat(product.price).toFixed(2)}
+            {formatCOP(product.price)}
           </span>
           <button 
             className="btn-primary"
             style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}
-            onClick={() => addToCart(product)}
+            onClick={(e) => {
+              e.stopPropagation(); // Evita que el clic abra la página del producto
+              addToCart(product);
+            }}
           >
             <Plus size={16} /> Agregar
           </button>

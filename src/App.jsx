@@ -5,6 +5,7 @@ import { ProductProvider } from './context/ProductContext';
 import { CartProvider } from './context/CartContext';
 import Login from './pages/Login';
 import Store from './pages/Store';
+import ProductDetail from './pages/ProductDetail';
 import AdminPanel from './pages/AdminPanel';
 
 const ProtectedRoute = ({ children, requireAdmin }) => {
@@ -22,6 +23,7 @@ const AppRoutes = () => {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/" element={<Store />} />
+      <Route path="/product/:id" element={<ProductDetail />} />
       <Route path="/admin" element={
         <ProtectedRoute requireAdmin={true}>
           <AdminPanel />
