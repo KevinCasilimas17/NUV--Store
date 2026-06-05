@@ -21,11 +21,7 @@ const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={
-        <ProtectedRoute>
-          <Store />
-        </ProtectedRoute>
-      } />
+      <Route path="/" element={<Store />} />
       <Route path="/admin" element={
         <ProtectedRoute requireAdmin={true}>
           <AdminPanel />

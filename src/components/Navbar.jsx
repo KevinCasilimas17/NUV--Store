@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, LogOut, Settings } from 'lucide-react';
+import { ShoppingBag, LogOut, Settings, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
@@ -12,7 +12,7 @@ const Navbar = ({ onSearchChange }) => {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   return (
@@ -43,43 +43,76 @@ const Navbar = ({ onSearchChange }) => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-          <span style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--color-text)' }}>
-            Bienvenida/o, {user?.name || user?.email?.split('@')[0]}
-          </span>
-          
-          {user?.role === 'admin' && (
-            <button onClick={() => navigate('/admin')} style={{ color: 'var(--color-accent)' }}>
-              <Settings size={20} />
-            </button>
-          )}
-
-          <button onClick={() => setIsCartOpen(true)} style={{ position: 'relative', color: 'var(--color-accent)' }}>
-            <ShoppingBag size={24} />
-            {cartCount > 0 && (
-              <span style={{
-                position: 'absolute',
-                top: '-5px',
-                right: '-8px',
-                background: 'var(--color-primary)',
-                color: 'white',
-                borderRadius: '50%',
-                width: '18px',
-                height: '18px',
-                fontSize: '10px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: 'bold',
-                border: '1px solid white'
-              }}>
-                {cartCount}
+          {user ? (
+            <>
+              <span style={{ fontSize: '1rem', fontWeight: '500', color: 'var(--color-text)' }}>
+                Bienvenida/o, {user?.name || user?.email?.split('@')[0]}
               </span>
-            )}
-          </button>
-          
-          <button onClick={handleLogout} style={{ color: 'var(--color-text-light)' }} title="Cerrar sesión">
-            <LogOut size={20} />
-          </button>
+              
+              {user?.role === 'admin' && (
+                <button onClick={() => navigate('/admin')} style={{ color: 'var(--color-accent)' }}>
+                  <Settings size={20} />
+                </button>
+              )}
+
+              <button onClick={() => setIsCartOpen(true)} style={{ position: 'relative', color: 'var(--color-accent)' }}>
+                <ShoppingBag size={24} />
+                {cartCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-5px',
+                    right: '-8px',
+                    background: 'var(--color-primary)',
+                    color: 'white',
+                    borderRadius: '50%',
+                    width: '18px',
+                    height: '18px',
+                    fontSize: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    border: '1px solid white'
+                  }}>
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+              
+              <button onClick={handleLogout} style={{ color: 'var(--color-text-light)' }} title="Cerrar sesión">
+                <LogOut size={20} />
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setIsCartOpen(true)} style={{ position: 'relative', color: 'var(--color-accent)' }}>
+                <ShoppingBag size={24} />
+                {cartCount > 0 && (
+                  <span style={{
+                    position: 'absolute',
+                    top: '-5px',
+                    right: '-8px',
+                    background: 'var(--color-primary)',
+                    color: 'white',
+                    borderRadius: '50%',
+                    width: '18px',
+                    height: '18px',
+                    fontSize: '10px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontWeight: 'bold',
+                    border: '1px solid white'
+                  }}>
+                    {cartCount}
+                  </span>
+                )}
+              </button>
+              <button onClick={() => navigate('/login')} className="btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem' }}>
+                <User size={16} /> Iniciar Sesión
+              </button>
+            </>
+          )}
         </div>
       </div>
     </nav>

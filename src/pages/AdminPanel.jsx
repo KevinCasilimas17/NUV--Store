@@ -10,10 +10,12 @@ const AdminPanel = () => {
 
   const [formData, setFormData] = useState({
     name: '',
+    description: '',
     category: 'Labiales',
     price: '',
     stock: '',
-    image: ''
+    image: '',
+    shipping: false
   });
 
   const categories = ['Labiales', 'Bases', 'Sombras', 'Skincare', 'Brochas'];
@@ -46,7 +48,7 @@ const AdminPanel = () => {
         stock: parseInt(formData.stock, 10)
       });
     }
-    setFormData({ name: '', category: 'Labiales', price: '', stock: '', image: '' });
+    setFormData({ name: '', description: '', category: 'Labiales', price: '', stock: '', image: '', shipping: false });
   };
 
   const handleEdit = (product) => {
@@ -54,17 +56,19 @@ const AdminPanel = () => {
     setCurrentProduct(product);
     setFormData({
       name: product.name,
+      description: product.description || '',
       category: product.category,
       price: product.price,
       stock: product.stock,
-      image: product.image
+      image: product.image,
+      shipping: product.shipping || false
     });
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setCurrentProduct(null);
-    setFormData({ name: '', category: 'Labiales', price: '', stock: '', image: '' });
+    setFormData({ name: '', description: '', category: 'Labiales', price: '', stock: '', image: '', shipping: false });
   };
 
   return (
@@ -87,6 +91,16 @@ const AdminPanel = () => {
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 required
               />
+              
+              <textarea
+                placeholder="Descripción del producto"
+                className="input-field"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                rows="3"
+                style={{ resize: 'vertical' }}
+              />
+
               <select 
                 className="input-field"
                 value={formData.category}
@@ -94,6 +108,7 @@ const AdminPanel = () => {
               >
                 {categories.map(c => <option key={c} value={c}>{c}</option>)}
               </select>
+              
               <div style={{ display: 'flex', gap: '1rem' }}>
                 <input
                   type="number"
@@ -112,6 +127,21 @@ const AdminPanel = () => {
                   onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
                   required
                 />
+              </div>
+
+              {/* Opción de envíos (deshabilitada por ahora) */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem' }}>
+                <input 
+                  type="checkbox" 
+                  id="shipping" 
+                  checked={formData.shipping} 
+                  onChange={(e) => setFormData({ ...formData, shipping: e.target.checked })}
+                  disabled
+                  title="Funcionalidad de envíos deshabilitada temporalmente"
+                />
+                <label htmlFor="shipping" style={{ color: 'var(--color-text-light)', cursor: 'not-allowed' }}>
+                  Habilitar opciones de envío (Próximamente)
+                </label>
               </div>
               
               <div style={{ border: '2px dashed rgba(109, 76, 65, 0.2)', padding: '1rem', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
@@ -149,9 +179,8 @@ const AdminPanel = () => {
               <thead>
                 <tr style={{ borderBottom: '2px solid rgba(109, 76, 65, 0.1)' }}>
                   <th style={{ padding: '1rem 0' }}>Producto</th>
-                  <th style={{ padding: '1rem 0' }}>Categoría</th>
+                  <th style={{ padding: '1rem 0' }}>Descripción</th>
                   <th style={{ padding: '1rem 0' }}>Precio</th>
-                  <th style={{ padding: '1rem 0' }}>Stock</th>
                   <th style={{ padding: '1rem 0' }}>Acciones</th>
                 </tr>
               </thead>
@@ -162,9 +191,10 @@ const AdminPanel = () => {
                       <img src={product.image} alt={product.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
                       <span style={{ fontWeight: '500' }}>{product.name}</span>
                     </td>
-                    <td style={{ padding: '1rem 0' }}>{product.category}</td>
+                    <td style={{ padding: '1rem 0', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-text-light)' }}>
+                      {product.description || 'Sin descripción'}
+                    </td>
                     <td style={{ padding: '1rem 0' }}>${parseFloat(product.price).toFixed(2)}</td>
-                    <td style={{ padding: '1rem 0' }}>{product.stock}</td>
                     <td style={{ padding: '1rem 0' }}>
                       <button onClick={() => handleEdit(product)} style={{ color: 'var(--color-secondary)', marginRight: '1rem' }} title="Editar">
                         <Edit size={18} />
@@ -177,7 +207,7 @@ const AdminPanel = () => {
                 ))}
                 {products.length === 0 && (
                   <tr>
-                    <td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-light)' }}>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-light)' }}>
                       No hay productos en el inventario.
                     </td>
                   </tr>

@@ -47,8 +47,13 @@ const ProductCard = ({ product }) => {
       </div>
       
       <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', flexGrow: 1 }}>
-        <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', flexGrow: 1 }}>{product.name}</h3>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+        <h3 style={{ fontSize: '1.2rem', marginBottom: '0.2rem' }}>{product.name}</h3>
+        {product.description && (
+          <p style={{ fontSize: '0.85rem', color: 'var(--color-text-light)', flexGrow: 1, marginBottom: '1rem', lineHeight: '1.4' }}>
+            {product.description.length > 70 ? `${product.description.substring(0, 70)}...` : product.description}
+          </p>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
           <span style={{ fontWeight: '700', fontSize: '1.2rem', color: 'var(--color-text)' }}>
             ${parseFloat(product.price).toFixed(2)}
           </span>

@@ -1,9 +1,13 @@
 import React from 'react';
 import { useCart } from '../context/CartContext';
-import { X, Minus, Plus, ShoppingBag } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import { X, Minus, Plus, ShoppingBag, User } from 'lucide-react';
 
 const CartDrawer = () => {
   const { cartItems, isCartOpen, setIsCartOpen, updateQuantity, removeFromCart, clearCart } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -11,6 +15,19 @@ const CartDrawer = () => {
     alert('¡Gracias por tu compra simulada en NUVÉ!');
     clearCart();
     setIsCartOpen(false);
+  };
+
+  const handleWhatsAppCheckout = () => {
+    const text = cartItems.map(item => `${item.quantity}x ${item.name}`).join('%0A');
+    const totalText = `%0ATotal: $${total.toFixed(2)}`;
+    const message = `Hola NUVÉ, quiero comprar:%0A${text}${totalText}`;
+    // Usaremos un número de placeholder porque no se especificó uno
+    window.open(`https://wa.me/573000000000?text=${message}`, '_blank');
+  };
+
+  const handleLoginRedirect = () => {
+    setIsCartOpen(false);
+    navigate('/login');
   };
 
   if (!isCartOpen) return null;
@@ -93,9 +110,35 @@ const CartDrawer = () => {
               <span>Total</span>
               <span>${total.toFixed(2)}</span>
             </div>
-            <button className="btn-primary" style={{ width: '100%', padding: '1rem' }} onClick={handleCheckout}>
-              Finalizar Compra
-            </button>
+            
+            {user ? (
+              <button className="btn-primary" style={{ width: '100%', padding: '1rem' }} onClick={handleCheckout}>
+                Finalizar Compra
+              </button>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <button className="btn-primary" style={{ width: '100%', padding: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} onClick={handleLoginRedirect}>
+                  <User size={18} /> Iniciar Sesión para comprar
+                </button>
+                <div style={{ textAlign: 'center', fontSize: '0.85rem', color: 'var(--color-text-light)', margin: '0.5rem 0' }}>o si prefieres:</div>
+                <button 
+                  onClick={handleWhatsAppCheckout}
+                  style={{ 
+                    width: '100%', 
+                    padding: '1rem', 
+                    background: '#25D366', 
+                    color: 'white', 
+                    borderRadius: 'var(--radius-full)', 
+                    fontWeight: 'bold',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem'
+                  }}>
+                  Comprar por WhatsApp sin cuenta
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
