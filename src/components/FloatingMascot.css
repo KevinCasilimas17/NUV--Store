@@ -11,7 +11,7 @@
 }
 
 .floating-mascot-container.hidden {
-  transform: translateY(40px);
+  transform: translateY(-20px);
 }
 
 .floating-mascot-container.open {

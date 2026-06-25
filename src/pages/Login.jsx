@@ -108,40 +108,7 @@ const Login = () => {
           </button>
         </form>
 
-        <div style={{ margin: '1.5rem 0', position: 'relative', textAlign: 'center' }}>
-          <span style={{ 
-            background: 'rgba(255, 255, 255, 0.7)', 
-            padding: '0 10px', 
-            color: 'var(--color-text-light)', 
-            fontSize: '0.9rem',
-            position: 'relative',
-            zIndex: 1
-          }}>O</span>
-          <div style={{ 
-            position: 'absolute', 
-            top: '50%', 
-            left: 0, 
-            right: 0, 
-            borderTop: '1px solid rgba(109, 76, 65, 0.2)',
-            zIndex: 0
-          }}></div>
-        </div>
 
-        <button 
-          onClick={handleGoogleLogin} 
-          className="btn-outline" 
-          style={{ 
-            width: '100%', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            gap: '0.5rem',
-            background: 'white'
-          }}
-        >
-          <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google" width="18" />
-          Continuar con Google
-        </button>
 
         <div style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'var(--color-text-light)' }}>
           {isRegistering ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}
