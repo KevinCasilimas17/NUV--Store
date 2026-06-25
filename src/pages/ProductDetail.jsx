@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
 import Navbar from '../components/Navbar';
 import CartDrawer from '../components/CartDrawer';
 import { formatCOP } from '../utils/format';
-import { Plus, Minus, ArrowLeft, Truck, ShieldCheck } from 'lucide-react';
+import { Plus, Minus, ArrowLeft, Truck, ShieldCheck, Bookmark } from 'lucide-react';
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -14,8 +14,22 @@ const ProductDetail = () => {
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState('description');
+  const [selectedVariant, setSelectedVariant] = useState(null);
 
   const product = products.find(p => p.id === id);
+
+  useEffect(() => {
+    if (product) {
+      if (product.variants && product.variants.length > 0 && !selectedVariant) {
+        setSelectedVariant(product.variants[0]);
+      }
+      
+      // Notificar a la mascota
+      window.dispatchEvent(new CustomEvent('mascot-message', { 
+        detail: `¡Ese ${product.category} te va a encantar! ¿Necesitas saber más?`
+      }));
+    }
+  }, [product]);
 
   if (!product) {
     return (
@@ -29,12 +43,27 @@ const ProductDetail = () => {
     );
   }
 
+  const discountedPrice = product.discount 
+    ? product.price - (product.price * (product.discount / 100))
+    : product.price;
+
+  const isOutOfStock = product.stock <= 0;
+
   const handleAddToCart = () => {
-    // Add multiple quantities
+    const productToAdd = {
+      ...product,
+      price: discountedPrice,
+      isPreorder: isOutOfStock,
+      selectedVariant: selectedVariant ? selectedVariant.name : null,
+      cartImage: selectedVariant?.image || product.image
+    };
+
     for (let i = 0; i < quantity; i++) {
-      addToCart(product);
+      addToCart(productToAdd);
     }
   };
+
+  const currentImage = selectedVariant?.image || product.image;
 
   return (
     <div>
@@ -53,13 +82,59 @@ const ProductDetail = () => {
           
           {/* Imagen del producto */}
           <div style={{ flex: '1 1 400px' }}>
-            <div className="glass-panel" style={{ borderRadius: 'var(--radius-lg)', padding: '1rem', overflow: 'hidden' }}>
+            <div className="glass-panel" style={{ borderRadius: 'var(--radius-lg)', padding: '1rem', overflow: 'hidden', position: 'relative' }}>
+              {product.discount > 0 && (
+                <div style={{
+                  position: 'absolute',
+                  top: '20px',
+                  right: '20px',
+                  background: 'var(--color-accent)',
+                  color: 'white',
+                  padding: '0.4rem 1rem',
+                  borderRadius: 'var(--radius-full)',
+                  fontWeight: 'bold',
+                  zIndex: 10
+                }}>
+                  -{product.discount}% OFF
+                </div>
+              )}
               <img 
-                src={product.image} 
+                src={currentImage} 
                 alt={product.name} 
-                style={{ width: '100%', height: 'auto', borderRadius: 'var(--radius-md)', objectFit: 'cover', aspectRatio: '1/1' }} 
+                style={{ width: '100%', height: 'auto', borderRadius: 'var(--radius-md)', objectFit: 'cover', aspectRatio: '1/1', filter: isOutOfStock ? 'grayscale(30%)' : 'none' }} 
               />
             </div>
+            
+            {/* Variantes Selector */}
+            {product.variants && product.variants.length > 0 && (
+              <div style={{ marginTop: '1.5rem' }}>
+                <h4 style={{ marginBottom: '0.5rem', color: 'var(--color-text)' }}>Selecciona un tono:</h4>
+                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                  {product.variants.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => setSelectedVariant(v)}
+                      style={{
+                        padding: '0.5rem',
+                        borderRadius: '8px',
+                        border: selectedVariant?.id === v.id ? '2px solid var(--color-secondary)' : '1px solid transparent',
+                        background: 'rgba(255,255,255,0.5)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '0.3rem',
+                        minWidth: '60px'
+                      }}
+                    >
+                      {v.image && (
+                        <img src={v.image} alt={v.name} style={{ width: '30px', height: '30px', borderRadius: '50%', objectFit: 'cover' }} />
+                      )}
+                      <span style={{ fontSize: '0.8rem', fontWeight: selectedVariant?.id === v.id ? 'bold' : 'normal' }}>{v.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Detalles del producto */}
@@ -68,9 +143,23 @@ const ProductDetail = () => {
               {product.category}
             </span>
             <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', marginTop: '0.5rem' }}>{product.name}</h1>
-            <p style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--color-text)', marginBottom: '1.5rem' }}>
-              {formatCOP(product.price)}
-            </p>
+            
+            <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <p style={{ fontSize: '2rem', fontWeight: 'bold', color: product.discount > 0 ? 'var(--color-accent)' : 'var(--color-text)', margin: 0 }}>
+                {formatCOP(discountedPrice)}
+              </p>
+              {product.discount > 0 && (
+                <span style={{ fontSize: '1.2rem', color: 'var(--color-text-light)', textDecoration: 'line-through' }}>
+                  {formatCOP(product.price)}
+                </span>
+              )}
+            </div>
+
+            {isOutOfStock && (
+              <div style={{ padding: '0.8rem', background: 'rgba(211, 47, 47, 0.1)', color: '#d32f2f', borderRadius: '8px', marginBottom: '1.5rem', fontWeight: '500' }}>
+                Este producto se encuentra agotado actualmente. Puedes hacer una reserva.
+              </div>
+            )}
             
             <p style={{ fontSize: '1.1rem', color: 'var(--color-text-light)', lineHeight: '1.6', marginBottom: '2rem' }}>
               {product.description || 'Sin descripción disponible para este producto.'}
@@ -90,8 +179,17 @@ const ProductDetail = () => {
                 <span style={{ padding: '0 1rem', fontWeight: 'bold' }}>{quantity}</span>
                 <button onClick={() => setQuantity(quantity + 1)} style={{ padding: '0.5rem', color: 'var(--color-text-light)' }}><Plus size={18} /></button>
               </div>
-              <button className="btn-primary" style={{ flexGrow: 1, fontSize: '1.1rem' }} onClick={handleAddToCart}>
-                Agregar al Carrito
+              
+              <button 
+                className={isOutOfStock ? "btn-outline" : "btn-primary"} 
+                style={{ flexGrow: 1, fontSize: '1.1rem', borderColor: isOutOfStock ? 'var(--color-accent)' : undefined, color: isOutOfStock ? 'var(--color-accent)' : undefined }} 
+                onClick={handleAddToCart}
+              >
+                {isOutOfStock ? (
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}><Bookmark size={20} /> Hacer Reserva</span>
+                ) : (
+                  'Agregar al Carrito'
+                )}
               </button>
             </div>
 

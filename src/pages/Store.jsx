@@ -1,19 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
 import { useProducts } from '../context/ProductContext';
 
-const CATEGORIES = ['Todos', 'Labiales', 'Bases', 'Sombras', 'Skincare', 'Brochas'];
+const CATEGORIES = ['Todos', 'Ofertas', 'Labiales', 'Bases', 'Sombras', 'Skincare', 'Brochas'];
 
 const Store = () => {
   const { products } = useProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState('Todos');
 
+  useEffect(() => {
+    const handleFilterOffers = () => {
+      setActiveCategory('Ofertas');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    window.addEventListener('filter-offers', handleFilterOffers);
+    return () => window.removeEventListener('filter-offers', handleFilterOffers);
+  }, []);
+
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = activeCategory === 'Todos' || p.category === activeCategory;
+    
+    let matchesCategory = false;
+    if (activeCategory === 'Todos') {
+      matchesCategory = true;
+    } else if (activeCategory === 'Ofertas') {
+      matchesCategory = p.discount && p.discount > 0;
+    } else {
+      matchesCategory = p.category === activeCategory;
+    }
+
     return matchesSearch && matchesCategory;
   });
 
@@ -28,13 +47,18 @@ const Store = () => {
           
           <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
             {CATEGORIES.map(cat => (
-              <button 
+               <button 
                 key={cat}
                 onClick={() => setActiveCategory(cat)}
                 className={activeCategory === cat ? 'btn-primary' : 'btn-outline'}
-                style={{ padding: '0.5rem 1rem', fontSize: '0.9rem' }}
+                style={{ 
+                  padding: '0.5rem 1rem', 
+                  fontSize: '0.9rem',
+                  borderColor: cat === 'Ofertas' ? 'var(--color-accent)' : undefined,
+                  color: cat === 'Ofertas' && activeCategory !== 'Ofertas' ? 'var(--color-accent)' : undefined
+                }}
               >
-                {cat}
+                {cat === 'Ofertas' ? '🔥 Ofertas' : cat}
               </button>
             ))}
           </div>
@@ -42,7 +66,7 @@ const Store = () => {
 
         {filteredProducts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--color-text-light)' }}>
-            No se encontraron productos.
+            No se encontraron productos en esta categoría.
           </div>
         ) : (
           <div style={{ 

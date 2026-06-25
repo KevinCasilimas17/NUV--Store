@@ -11,18 +11,22 @@ const CartDrawer = () => {
   const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   const handleCheckout = () => {
-    // Mostramos el anuncio al usuario
     alert('¡Hola! Las compras automáticas en la tienda aún no están habilitadas. Serás redirigido a nuestro WhatsApp para finalizar tu pedido de forma personalizada.');
     
     // Generamos el texto para WhatsApp
-    const text = cartItems.map(item => `${item.quantity}x ${item.name}`).join('%0A');
+    const text = cartItems.map(item => {
+      let itemName = item.name;
+      if (item.selectedVariant) itemName += ` (Tono: ${item.selectedVariant})`;
+      if (item.isPreorder) itemName += ` [RESERVA]`;
+      return `${item.quantity}x ${itemName} - ${formatCOP(item.price * item.quantity)}`;
+    }).join('%0A');
+    
     const totalText = `%0ATotal: ${formatCOP(total)}`;
     const message = `Hola NUVÉ, me gustaría hacer este pedido:%0A%0A${text}%0A${totalText}`;
     
     // Redirigimos a WhatsApp (puedes cambiar el número aquí)
     window.open(`https://wa.me/573000000000?text=${message}`, '_blank');
     
-    // Limpiamos el carrito y lo cerramos
     clearCart();
     setIsCartOpen(false);
   };
@@ -79,12 +83,24 @@ const CartDrawer = () => {
               Tu carrito está vacío, ¡agrega algo hermoso!
             </div>
           ) : (
-            cartItems.map(item => (
-              <div key={item.id} style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-                <img src={item.image} alt={item.name} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
+            cartItems.map((item, index) => (
+              <div key={`${item.id}-${index}`} style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px dashed rgba(109,76,65,0.1)' }}>
+                <img src={item.cartImage || item.image} alt={item.name} style={{ width: '80px', height: '80px', objectFit: 'cover', borderRadius: 'var(--radius-sm)' }} />
                 <div style={{ flexGrow: 1 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <h4 style={{ margin: 0, fontFamily: 'var(--font-main)' }}>{item.name}</h4>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h4 style={{ margin: 0, fontFamily: 'var(--font-main)' }}>{item.name}</h4>
+                      {item.selectedVariant && (
+                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', marginTop: '0.2rem' }}>
+                          Tono: {item.selectedVariant}
+                        </div>
+                      )}
+                      {item.isPreorder && (
+                        <div style={{ fontSize: '0.75rem', background: 'rgba(211, 47, 47, 0.1)', color: '#d32f2f', padding: '2px 6px', borderRadius: '4px', display: 'inline-block', marginTop: '0.2rem' }}>
+                          Reserva
+                        </div>
+                      )}
+                    </div>
                     <button onClick={() => removeFromCart(item.id)} style={{ color: 'var(--color-text-light)' }}><X size={16} /></button>
                   </div>
                   <div style={{ color: 'var(--color-accent)', fontWeight: 'bold', margin: '0.5rem 0' }}>

@@ -33,6 +33,8 @@ const AppRoutes = () => {
   );
 };
 
+import FloatingMascot from './components/FloatingMascot';
+
 const App = () => {
   return (
     <AuthProvider>
@@ -40,6 +42,7 @@ const App = () => {
         <CartProvider>
           <BrowserRouter>
             <AppRoutes />
+            <FloatingMascot />
           </BrowserRouter>
         </CartProvider>
       </ProductProvider>

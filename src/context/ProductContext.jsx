@@ -1,52 +1,62 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { db } from '../config/firebase';
+import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot } from 'firebase/firestore';
 
 const ProductContext = createContext();
 
 export const useProducts = () => useContext(ProductContext);
 
-const initialProducts = [
-  { id: '1', name: 'Labial Velvet Matte', price: 45000, category: 'Labiales', stock: 50, image: 'https://images.unsplash.com/photo-1586495777744-4413f21062fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80', description: 'Labial de larga duración con acabado mate aterciopelado. No reseca los labios.', shipping: false },
-  { id: '2', name: 'Base Luminous Silk', price: 120000, category: 'Bases', stock: 30, image: 'https://images.unsplash.com/photo-1599305090598-fe179d501227?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80', description: 'Base líquida ligera para un acabado luminoso y natural, ideal para todo tipo de piel.', shipping: false },
-  { id: '3', name: 'Paleta Rose Gold', price: 95000, category: 'Sombras', stock: 20, image: 'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80', description: 'Paleta de sombras con tonos cálidos y dorados, altamente pigmentados y fáciles de difuminar.', shipping: false },
-  { id: '4', name: 'Sérum Glow Up', price: 85000, category: 'Skincare', stock: 40, image: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80', description: 'Sérum hidratante con ácido hialurónico y vitamina C para una piel radiante.', shipping: false },
-  { id: '5', name: 'Set de Brochas Fluffy', price: 65000, category: 'Brochas', stock: 15, image: 'https://images.unsplash.com/photo-1596462502278-27bfdc403348?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80', description: 'Set de 5 brochas esenciales con cerdas sintéticas extra suaves para un maquillaje profesional.', shipping: false }
-];
-
 export const ProductProvider = ({ children }) => {
   const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const productsCollection = collection(db, 'products');
 
   useEffect(() => {
-    const storedProducts = localStorage.getItem('nuve_products');
-    if (storedProducts) {
-      setProducts(JSON.parse(storedProducts));
-    } else {
-      setProducts(initialProducts);
-      localStorage.setItem('nuve_products', JSON.stringify(initialProducts));
-    }
+    // Usamos onSnapshot para escuchar los cambios en tiempo real
+    const unsubscribe = onSnapshot(productsCollection, (snapshot) => {
+      const productsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      setProducts(productsData);
+      setLoading(false);
+    }, (error) => {
+      console.error("Error fetching products: ", error);
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
   }, []);
 
-  const addProduct = (product) => {
-    const newProduct = { ...product, id: Date.now().toString() };
-    const updated = [...products, newProduct];
-    setProducts(updated);
-    localStorage.setItem('nuve_products', JSON.stringify(updated));
+  const addProduct = async (product) => {
+    try {
+      await addDoc(productsCollection, product);
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
   };
 
-  const updateProduct = (id, updatedFields) => {
-    // Forzamos la comparación a String para evitar fallos de edición entre id numérico y de texto
-    const updated = products.map(p => String(p.id) === String(id) ? { ...p, ...updatedFields } : p);
-    setProducts(updated);
-    localStorage.setItem('nuve_products', JSON.stringify(updated));
+  const updateProduct = async (id, updatedFields) => {
+    try {
+      const productDoc = doc(db, 'products', id);
+      await updateDoc(productDoc, updatedFields);
+    } catch (error) {
+      console.error("Error updating document: ", error);
+    }
   };
 
-  const deleteProduct = (id) => {
-    const updated = products.filter(p => String(p.id) !== String(id));
-    setProducts(updated);
-    localStorage.setItem('nuve_products', JSON.stringify(updated));
+  const deleteProduct = async (id) => {
+    try {
+      const productDoc = doc(db, 'products', id);
+      await deleteDoc(productDoc);
+    } catch (error) {
+      console.error("Error deleting document: ", error);
+    }
   };
 
   return (
-    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct }}>
+    <ProductContext.Provider value={{ products, addProduct, updateProduct, deleteProduct, loading }}>
       {children}
     </ProductContext.Provider>
   );

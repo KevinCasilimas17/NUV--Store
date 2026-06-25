@@ -17,33 +17,12 @@
   transform: scale(1.5);
 }
 
-.nuve-text {
-  font-family: var(--font-serif);
-  font-size: 3rem;
-  font-weight: 700;
-  letter-spacing: -1px;
-  color: var(--color-primary);
-  /* 3D Bubble Velvet effect */
-  text-shadow: 
-    0px 1px 0px #f0b0bc,
-    0px 2px 0px #ed9da9,
-    0px 3px 0px #e88694,
-    0px 4px 0px #e26e7e,
-    0px 5px 4px rgba(109, 76, 65, 0.4),
-    0px 8px 12px rgba(109, 76, 65, 0.2),
-    inset 0px 3px 6px rgba(255,255,255,0.8);
-  -webkit-text-stroke: 1px rgba(255,255,255,0.3);
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nuve-sparkle {
-  position: absolute;
-  top: -5px;
-  right: -20px;
-  animation: twinkle 2s infinite alternate;
+.nuve-logo-image {
+  height: 60px; /* Tamaño base */
+  width: auto;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 4px 6px rgba(235, 137, 161, 0.3));
 }
 
 @keyframes floatCloud {

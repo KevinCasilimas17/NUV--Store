@@ -2,74 +2,141 @@ import React, { useState } from 'react';
 import Navbar from '../components/Navbar';
 import { useProducts } from '../context/ProductContext';
 import { formatCOP } from '../utils/format';
-import { Plus, Edit, Trash, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash, Image as ImageIcon, X } from 'lucide-react';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { storage } from '../config/firebase';
 
 const AdminPanel = () => {
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
   const [isEditing, setIsEditing] = useState(false);
   const [currentProduct, setCurrentProduct] = useState(null);
+  const [imageFile, setImageFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
-  const [formData, setFormData] = useState({
+  const initialForm = {
     name: '',
     description: '',
     category: 'Labiales',
     price: '',
     stock: '',
+    discount: 0,
     image: '',
-    shipping: false
-  });
+    shipping: false,
+    variants: []
+  };
+
+  const [formData, setFormData] = useState(initialForm);
 
   const categories = ['Labiales', 'Bases', 'Sombras', 'Skincare', 'Brochas'];
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData({ ...formData, image: reader.result });
-      };
-      reader.readAsDataURL(file);
+      setImageFile(file);
+      setFormData({ ...formData, image: URL.createObjectURL(file) });
     }
   };
 
-  const handleSubmit = (e) => {
+  const addVariant = () => {
+    setFormData({
+      ...formData,
+      variants: [...(formData.variants || []), { id: Date.now().toString(), name: '', image: '', file: null }]
+    });
+  };
+
+  const updateVariant = (index, field, value) => {
+    const newVariants = [...formData.variants];
+    newVariants[index][field] = value;
+    if (field === 'file' && value) {
+      newVariants[index].image = URL.createObjectURL(value);
+    }
+    setFormData({ ...formData, variants: newVariants });
+  };
+
+  const removeVariant = (index) => {
+    const newVariants = [...formData.variants];
+    newVariants.splice(index, 1);
+    setFormData({ ...formData, variants: newVariants });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setUploading(true);
+
+    let imageUrl = formData.image;
+
+    // Subir imagen principal
+    if (imageFile) {
+      try {
+        const imageRef = ref(storage, `products/${Date.now()}_${imageFile.name}`);
+        const snapshot = await uploadBytes(imageRef, imageFile);
+        imageUrl = await getDownloadURL(snapshot.ref);
+      } catch (error) {
+        console.error("Error subiendo la imagen principal", error);
+        alert("Error subiendo la imagen, intenta de nuevo.");
+        setUploading(false);
+        return;
+      }
+    }
+
+    // Subir imágenes de variantes
+    let processedVariants = [];
+    if (formData.variants && formData.variants.length > 0) {
+      processedVariants = await Promise.all(formData.variants.map(async (v) => {
+        if (v.file) {
+          const vRef = ref(storage, `products/variants/${Date.now()}_${v.file.name}`);
+          const vSnap = await uploadBytes(vRef, v.file);
+          const vUrl = await getDownloadURL(vSnap.ref);
+          return { id: v.id, name: v.name, image: vUrl };
+        }
+        return { id: v.id, name: v.name, image: v.image };
+      }));
+    }
+
+    const productData = {
+      ...formData,
+      image: imageUrl,
+      price: parseFloat(formData.price),
+      stock: parseInt(formData.stock, 10),
+      discount: parseInt(formData.discount || 0, 10),
+      variants: processedVariants
+    };
+
     if (isEditing) {
-      updateProduct(currentProduct.id, {
-        ...formData,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock, 10)
-      });
+      await updateProduct(currentProduct.id, productData);
       setIsEditing(false);
       setCurrentProduct(null);
     } else {
-      addProduct({
-        ...formData,
-        price: parseFloat(formData.price),
-        stock: parseInt(formData.stock, 10)
-      });
+      await addProduct(productData);
     }
-    setFormData({ name: '', description: '', category: 'Labiales', price: '', stock: '', image: '', shipping: false });
+    
+    setFormData(initialForm);
+    setImageFile(null);
+    setUploading(false);
   };
 
   const handleEdit = (product) => {
     setIsEditing(true);
     setCurrentProduct(product);
+    setImageFile(null);
     setFormData({
       name: product.name,
       description: product.description || '',
       category: product.category,
       price: product.price,
       stock: product.stock,
+      discount: product.discount || 0,
       image: product.image,
-      shipping: product.shipping || false
+      shipping: product.shipping || false,
+      variants: product.variants || []
     });
   };
 
   const handleCancel = () => {
     setIsEditing(false);
     setCurrentProduct(null);
-    setFormData({ name: '', description: '', category: 'Labiales', price: '', stock: '', image: '', shipping: false });
+    setImageFile(null);
+    setFormData(initialForm);
   };
 
   return (
@@ -81,7 +148,7 @@ const AdminPanel = () => {
         <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
           
           {/* Formulario */}
-          <div className="glass-panel" style={{ flex: '1 1 350px', padding: '2rem', borderRadius: 'var(--radius-lg)' }}>
+          <div className="glass-panel" style={{ flex: '1 1 400px', padding: '2rem', borderRadius: 'var(--radius-lg)' }}>
             <h2>{isEditing ? 'Editar Producto' : 'Nuevo Producto'}</h2>
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '1rem' }}>
               <input
@@ -111,44 +178,47 @@ const AdminPanel = () => {
               </select>
               
               <div style={{ display: 'flex', gap: '1rem' }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--color-text-light)' }}>Precio (COP)</label>
+                  <input
+                    type="number"
+                    placeholder="Precio"
+                    className="input-field"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                    required
+                  />
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ fontSize: '0.8rem', color: 'var(--color-text-light)' }}>Stock</label>
+                  <input
+                    type="number"
+                    placeholder="Stock"
+                    className="input-field"
+                    value={formData.stock}
+                    onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                    required
+                  />
+                </div>
+              </div>
+
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: '0.8rem', color: 'var(--color-text-light)' }}>Descuento (%)</label>
                 <input
                   type="number"
-                  placeholder="Precio (COP)"
+                  placeholder="Ej: 15"
                   className="input-field"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  required
-                />
-                <input
-                  type="number"
-                  placeholder="Stock"
-                  className="input-field"
-                  value={formData.stock}
-                  onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
-                  required
+                  value={formData.discount}
+                  onChange={(e) => setFormData({ ...formData, discount: e.target.value })}
+                  min="0" max="100"
                 />
               </div>
 
-              {/* Opción de envíos (deshabilitada por ahora) */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem' }}>
-                <input 
-                  type="checkbox" 
-                  id="shipping" 
-                  checked={formData.shipping} 
-                  onChange={(e) => setFormData({ ...formData, shipping: e.target.checked })}
-                  disabled
-                  title="Funcionalidad de envíos deshabilitada temporalmente"
-                />
-                <label htmlFor="shipping" style={{ color: 'var(--color-text-light)', cursor: 'not-allowed' }}>
-                  Habilitar opciones de envío (Próximamente)
-                </label>
-              </div>
-              
               <div style={{ border: '2px dashed rgba(109, 76, 65, 0.2)', padding: '1rem', borderRadius: 'var(--radius-md)', textAlign: 'center' }}>
                 <label style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
                   <ImageIcon size={32} color="var(--color-secondary)" />
                   <span style={{ color: 'var(--color-text-light)', fontSize: '0.9rem' }}>
-                    {formData.image ? 'Cambiar imagen' : 'Subir imagen (JPG/PNG)'}
+                    {formData.image ? 'Cambiar imagen principal' : 'Subir imagen principal (JPG/PNG)'}
                   </span>
                   <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: 'none' }} />
                 </label>
@@ -159,9 +229,49 @@ const AdminPanel = () => {
                 )}
               </div>
 
+              {/* Sección de Variantes */}
+              <div style={{ marginTop: '1rem', borderTop: '1px solid rgba(109, 76, 65, 0.1)', paddingTop: '1rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: '1.1rem' }}>Tonos / Variantes</h3>
+                  <button type="button" onClick={addVariant} className="btn-outline" style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem' }}>
+                    <Plus size={14} style={{ display: 'inline' }} /> Añadir
+                  </button>
+                </div>
+                
+                {formData.variants && formData.variants.map((v, index) => (
+                  <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', background: 'rgba(255,255,255,0.5)', padding: '0.5rem', borderRadius: '8px' }}>
+                    <input 
+                      type="text" 
+                      placeholder="Nombre (ej. Beige)" 
+                      className="input-field" 
+                      style={{ padding: '0.5rem', flex: 1 }}
+                      value={v.name}
+                      onChange={(e) => updateVariant(index, 'name', e.target.value)}
+                      required
+                    />
+                    
+                    <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', height: '40px', background: 'white', borderRadius: '4px', border: '1px solid #ddd' }} title="Subir foto del tono">
+                      {v.image ? (
+                        <img src={v.image} alt="Tono" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '4px' }} />
+                      ) : (
+                        <ImageIcon size={16} color="var(--color-text-light)" />
+                      )}
+                      <input type="file" accept="image/*" onChange={(e) => updateVariant(index, 'file', e.target.files[0])} style={{ display: 'none' }} />
+                    </label>
+
+                    <button type="button" onClick={() => removeVariant(index)} style={{ color: '#d32f2f', padding: '0.5rem' }}>
+                      <X size={18} />
+                    </button>
+                  </div>
+                ))}
+                {formData.variants && formData.variants.length === 0 && (
+                  <p style={{ fontSize: '0.8rem', color: 'var(--color-text-light)' }}>No hay tonos agregados. El producto será único.</p>
+                )}
+              </div>
+
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn-primary" style={{ flexGrow: 1 }}>
-                  {isEditing ? 'Guardar Cambios' : <><Plus size={16} style={{ display: 'inline', verticalAlign: 'middle' }} /> Agregar</>}
+                <button type="submit" className="btn-primary" style={{ flexGrow: 1 }} disabled={uploading}>
+                  {uploading ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : <><Plus size={16} style={{ display: 'inline', verticalAlign: 'middle' }} /> Agregar</>)}
                 </button>
                 {isEditing && (
                   <button type="button" className="btn-outline" onClick={handleCancel}>
@@ -179,8 +289,7 @@ const AdminPanel = () => {
               <thead>
                 <tr style={{ borderBottom: '2px solid rgba(109, 76, 65, 0.1)' }}>
                   <th style={{ padding: '1rem 0' }}>Producto</th>
-                  <th style={{ padding: '1rem 0' }}>Descripción</th>
-                  <th style={{ padding: '1rem 0' }}>Precio</th>
+                  <th style={{ padding: '1rem 0' }}>Detalles</th>
                   <th style={{ padding: '1rem 0' }}>Acciones</th>
                 </tr>
               </thead>
@@ -189,12 +298,18 @@ const AdminPanel = () => {
                   <tr key={product.id} style={{ borderBottom: '1px solid rgba(109, 76, 65, 0.1)' }}>
                     <td style={{ padding: '1rem 0', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                       <img src={product.image} alt={product.name} style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                      <span style={{ fontWeight: '500' }}>{product.name}</span>
+                      <div>
+                        <div style={{ fontWeight: '500' }}>{product.name}</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-light)' }}>
+                          Stock: {product.stock} {product.stock === 0 && <span style={{ color: '#d32f2f' }}>(Agotado)</span>}
+                        </div>
+                      </div>
                     </td>
-                    <td style={{ padding: '1rem 0', maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: 'var(--color-text-light)' }}>
-                      {product.description || 'Sin descripción'}
+                    <td style={{ padding: '1rem 0', color: 'var(--color-text-light)', fontSize: '0.9rem' }}>
+                      <div>Precio: {formatCOP(product.price)}</div>
+                      {product.discount > 0 && <div style={{ color: 'var(--color-accent)' }}>Descuento: {product.discount}%</div>}
+                      {product.variants && product.variants.length > 0 && <div>Tonos: {product.variants.length}</div>}
                     </td>
-                    <td style={{ padding: '1rem 0' }}>{formatCOP(product.price)}</td>
                     <td style={{ padding: '1rem 0' }}>
                       <button onClick={() => handleEdit(product)} style={{ color: 'var(--color-secondary)', marginRight: '1rem' }} title="Editar">
                         <Edit size={18} />
@@ -207,7 +322,7 @@ const AdminPanel = () => {
                 ))}
                 {products.length === 0 && (
                   <tr>
-                    <td colSpan="4" style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-light)' }}>
+                    <td colSpan="3" style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-light)' }}>
                       No hay productos en el inventario.
                     </td>
                   </tr>

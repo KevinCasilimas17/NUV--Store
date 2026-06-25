@@ -1,16 +1,11 @@
 import React from 'react';
-import { Sparkles } from 'lucide-react';
 import './Logo.css';
+import logoImg from '../assets/logo.png';
 
 const Logo = ({ size = 'medium' }) => {
   return (
     <div className={`nuve-logo-container ${size}`}>
-      <div className="nuve-text">
-        NUVÉ
-        <span className="nuve-sparkle">
-          <Sparkles size={size === 'large' ? 32 : 16} fill="white" color="white" />
-        </span>
-      </div>
+      <img src={logoImg} alt="NUVÉ Logo" className="nuve-logo-image" />
     </div>
   );
 };
