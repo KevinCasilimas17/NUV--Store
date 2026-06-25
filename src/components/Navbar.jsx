@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, LogOut, Settings, User } from 'lucide-react';
+import { ShoppingBag, LogOut, Settings, User, Home } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
@@ -31,6 +31,28 @@ const Navbar = ({ onSearchChange }) => {
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
           <Logo size="small" />
+          <button 
+            onClick={() => navigate('/')} 
+            title="Ir al inicio"
+            style={{ 
+              color: 'var(--color-accent)', 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.3rem',
+              background: 'rgba(216, 161, 196, 0.15)',
+              padding: '0.4rem 0.7rem',
+              borderRadius: '8px',
+              border: '1px solid rgba(216, 161, 196, 0.3)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+              fontSize: '0.85rem',
+              fontWeight: '500'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(216, 161, 196, 0.3)'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(216, 161, 196, 0.15)'; e.currentTarget.style.transform = 'translateY(0)'; }}
+          >
+            <Home size={18} /> Inicio
+          </button>
           {onSearchChange && (
             <input 
               type="text" 

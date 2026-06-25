@@ -10,23 +10,25 @@ const CartDrawer = () => {
 
   const total = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+  const WHATSAPP_NUMBER = '573113449290';
+
   const handleCheckout = () => {
     alert('¡Hola! Las compras automáticas en la tienda aún no están habilitadas. Serás redirigido a nuestro WhatsApp para finalizar tu pedido de forma personalizada.');
-    
-    // Generamos el texto para WhatsApp
+
+    // Generamos el texto para WhatsApp con detalle del pedido
     const text = cartItems.map(item => {
       let itemName = item.name;
       if (item.selectedVariant) itemName += ` (Tono: ${item.selectedVariant})`;
       if (item.isPreorder) itemName += ` [RESERVA]`;
-      return `${item.quantity}x ${itemName} - ${formatCOP(item.price * item.quantity)}`;
+      return `🛍️ ${item.quantity}x ${itemName} - ${formatCOP(item.price * item.quantity)}`;
     }).join('%0A');
-    
-    const totalText = `%0ATotal: ${formatCOP(total)}`;
-    const message = `Hola NUVÉ, me gustaría hacer este pedido:%0A%0A${text}%0A${totalText}`;
-    
-    // Redirigimos a WhatsApp (puedes cambiar el número aquí)
-    window.open(`https://wa.me/573000000000?text=${message}`, '_blank');
-    
+
+    const totalText = `%0A%0A💰 *Total: ${formatCOP(total)}*`;
+    const message = `¡Hola NUVÉ! 🌸 Quiero comprar esto:%0A%0A${text}${totalText}`;
+
+    // Redirigimos a WhatsApp
+    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
+
     clearCart();
     setIsCartOpen(false);
   };
@@ -35,7 +37,7 @@ const CartDrawer = () => {
 
   return (
     <>
-      <div 
+      <div
         style={{
           position: 'fixed',
           top: 0,
@@ -123,10 +125,10 @@ const CartDrawer = () => {
               <span>Total</span>
               <span>{formatCOP(total)}</span>
             </div>
-            
-            <button 
-              className="btn-primary" 
-              style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }} 
+
+            <button
+              className="btn-primary"
+              style={{ width: '100%', padding: '1rem', fontSize: '1.1rem' }}
               onClick={handleCheckout}
             >
               Finalizar Compra
