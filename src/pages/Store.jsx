@@ -4,7 +4,7 @@ import ProductCard from '../components/ProductCard';
 import CartDrawer from '../components/CartDrawer';
 import { useProducts } from '../context/ProductContext';
 
-const CATEGORIES = ['Todos', 'Ofertas', 'Labiales', 'Bases', 'Sombras', 'Skincare', 'Brochas'];
+const CATEGORIES = ['Todos', 'Ofertas', 'Labiales', 'Bases', 'Sombras', 'Rubores', 'Skincare', 'Brochas'];
 
 const Store = () => {
   const { products } = useProducts();

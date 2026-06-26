@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Logo from '../components/Logo';
+import { ArrowLeft } from 'lucide-react';
 
 const Login = () => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -10,7 +11,7 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   
-  const { login, loginWithGoogleMock } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -33,11 +34,6 @@ const Login = () => {
     }
   };
 
-  const handleGoogleLogin = () => {
-    loginWithGoogleMock();
-    navigate('/');
-  };
-
   return (
     <div style={{
       display: 'flex',
@@ -45,14 +41,35 @@ const Login = () => {
       alignItems: 'center',
       justifyContent: 'center',
       minHeight: '100vh',
-      padding: '2rem'
+      padding: '2rem',
+      position: 'relative'
     }}>
+      <button 
+        onClick={() => navigate('/')} 
+        style={{ 
+          position: 'absolute', 
+          top: '2rem', 
+          left: '2rem', 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.5rem', 
+          color: 'var(--color-text-light)', 
+          background: 'none', 
+          border: 'none', 
+          cursor: 'pointer',
+          fontWeight: '500'
+        }}
+      >
+        <ArrowLeft size={20} /> Volver a la tienda
+      </button>
+
       <div className="glass-panel" style={{
         padding: '3rem 2rem',
         borderRadius: 'var(--radius-lg)',
         width: '100%',
         maxWidth: '450px',
-        textAlign: 'center'
+        textAlign: 'center',
+        marginTop: '2rem'
       }}>
         <div style={{ marginBottom: '2rem' }}>
           <Logo size="large" />
