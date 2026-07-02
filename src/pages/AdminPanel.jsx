@@ -3,8 +3,7 @@ import Navbar from '../components/Navbar';
 import { useProducts } from '../context/ProductContext';
 import { formatCOP } from '../utils/format';
 import { Plus, Edit, Trash, Image as ImageIcon, X } from 'lucide-react';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { storage } from '../config/firebase';
+import { supabase } from '../config/supabase';
 
 const AdminPanel = () => {
   const { products, addProduct, updateProduct, deleteProduct } = useProducts();
@@ -68,9 +67,21 @@ const AdminPanel = () => {
     // Subir imagen principal
     if (imageFile) {
       try {
-        const imageRef = ref(storage, `products/${Date.now()}_${imageFile.name}`);
-        const snapshot = await uploadBytes(imageRef, imageFile);
-        imageUrl = await getDownloadURL(snapshot.ref);
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `${Date.now()}_main.${fileExt}`;
+        const filePath = `${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('products')
+          .upload(filePath, imageFile);
+
+        if (uploadError) throw uploadError;
+
+        const { data } = supabase.storage
+          .from('products')
+          .getPublicUrl(filePath);
+        
+        imageUrl = data.publicUrl;
       } catch (error) {
         console.error("Error subiendo la imagen principal", error);
         alert("Error subiendo la imagen, intenta de nuevo.");
@@ -84,10 +95,24 @@ const AdminPanel = () => {
     if (formData.variants && formData.variants.length > 0) {
       processedVariants = await Promise.all(formData.variants.map(async (v) => {
         if (v.file) {
-          const vRef = ref(storage, `products/variants/${Date.now()}_${v.file.name}`);
-          const vSnap = await uploadBytes(vRef, v.file);
-          const vUrl = await getDownloadURL(vSnap.ref);
-          return { id: v.id, name: v.name, image: vUrl };
+          const fileExt = v.file.name.split('.').pop();
+          const fileName = `${Date.now()}_variant_${v.id}.${fileExt}`;
+          const filePath = `variants/${fileName}`;
+
+          const { error: uploadError } = await supabase.storage
+            .from('products')
+            .upload(filePath, v.file);
+
+          if (uploadError) {
+             console.error("Error subiendo imagen de variante", uploadError);
+             return { id: v.id, name: v.name, image: v.image };
+          }
+
+          const { data } = supabase.storage
+            .from('products')
+            .getPublicUrl(filePath);
+
+          return { id: v.id, name: v.name, image: data.publicUrl };
         }
         return { id: v.id, name: v.name, image: v.image };
       }));
