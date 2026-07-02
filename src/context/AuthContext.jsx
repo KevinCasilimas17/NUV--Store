@@ -12,11 +12,18 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     // 1. Obtener la sesión actual al cargar la app
     const fetchSession = async () => {
+      // Primero revisar si hay admin guardado localmente
+      const storedAdmin = localStorage.getItem('nuve_admin');
+      if (storedAdmin) {
+        setUser(JSON.parse(storedAdmin));
+        setLoading(false);
+        return;
+      }
+
       const { data: { session } } = await supabase.auth.getSession();
       
       if (session) {
-        // Formatear el usuario basado en nuestro sistema
-        const role = session.user.email === 'admin@gmail.com' ? 'admin' : 'user';
+        const role = 'user';
         const name = session.user.user_metadata?.name || session.user.email.split('@')[0];
         setUser({ id: session.user.id, email: session.user.email, name, role });
       }
@@ -40,6 +47,19 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (name, email, password) => {
+    // Caso especial: Administrador con credenciales hardcodeadas
+    if (email.toLowerCase() === 'admin@gmail.com') {
+      if (password === 'Natalia@Isa2026') {
+        const adminUser = { id: 'admin', email: 'admin@gmail.com', name: 'Administrador', role: 'admin' };
+        setUser(adminUser);
+        localStorage.setItem('nuve_admin', JSON.stringify(adminUser));
+        return { success: true };
+      } else {
+        return { success: false, error: 'Contraseña de administrador incorrecta' };
+      }
+    }
+
+    // Usuarios normales: Supabase Auth
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -85,6 +105,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    localStorage.removeItem('nuve_admin');
     await supabase.auth.signOut();
     setUser(null);
   };
