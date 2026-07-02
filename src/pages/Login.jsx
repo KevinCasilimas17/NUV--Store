@@ -29,7 +29,7 @@ const Login = () => {
     }
     
     if (result.success) {
-      if (email.toLowerCase() === 'admin@gmail.com') {
+      if (email.toLowerCase() === 'kevincasilimas0@gmail.com') {
         navigate('/admin');
       } else {
         navigate('/');
