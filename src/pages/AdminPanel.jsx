@@ -15,6 +15,7 @@ const AdminPanel = () => {
   const initialForm = {
     name: '',
     description: '',
+    usage: '',
     category: 'Labiales',
     price: '',
     stock: '',
@@ -147,6 +148,7 @@ const AdminPanel = () => {
     setFormData({
       name: product.name,
       description: product.description || '',
+      usage: product.usage || '',
       category: product.category,
       price: product.price,
       stock: product.stock,
@@ -191,6 +193,15 @@ const AdminPanel = () => {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows="3"
+                style={{ resize: 'vertical' }}
+              />
+
+              <textarea
+                placeholder="Modo de Uso"
+                className="input-field"
+                value={formData.usage}
+                onChange={(e) => setFormData({ ...formData, usage: e.target.value })}
+                rows="2"
                 style={{ resize: 'vertical' }}
               />
 

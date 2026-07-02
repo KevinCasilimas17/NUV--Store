@@ -233,7 +233,7 @@ const ProductDetail = () => {
                   <p>{product.description || 'Detalles completos no disponibles.'}</p>
                 )}
                 {activeTab === 'usage' && (
-                  <p>Aplica una cantidad generosa del producto según tu rutina diaria. Difumina suavemente hasta lograr el acabado deseado.</p>
+                  <p>{product.usage || 'Aplica una cantidad generosa del producto según tu rutina diaria. Difumina suavemente hasta lograr el acabado deseado.'}</p>
                 )}
                 {activeTab === 'ingredients' && (
                   <p>Water (Aqua), Glycerin, Silica, Dimethicone, Titanium Dioxide. Producto libre de crueldad animal.</p>

@@ -55,7 +55,7 @@ export const ProductProvider = ({ children }) => {
         .insert([product]);
         
       if (error) throw error;
-      // No necesitamos llamar fetchProducts porque la suscripción lo hará
+      fetchProducts();
     } catch (error) {
       console.error("Error adding product: ", error);
     }
@@ -69,6 +69,7 @@ export const ProductProvider = ({ children }) => {
         .eq('id', id);
         
       if (error) throw error;
+      fetchProducts();
     } catch (error) {
       console.error("Error updating product: ", error);
     }
@@ -82,6 +83,7 @@ export const ProductProvider = ({ children }) => {
         .eq('id', id);
         
       if (error) throw error;
+      fetchProducts();
     } catch (error) {
       console.error("Error deleting product: ", error);
     }
