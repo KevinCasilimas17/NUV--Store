@@ -296,7 +296,9 @@ const AdminPanel = () => {
 
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
                 <button type="submit" className="btn-primary" style={{ flexGrow: 1 }} disabled={uploading}>
-                  {uploading ? 'Guardando...' : (isEditing ? 'Guardar Cambios' : <><Plus size={16} style={{ display: 'inline', verticalAlign: 'middle' }} /> Agregar</>)}
+                  {uploading && <span>Guardando...</span>}
+                  {!uploading && isEditing && <span>Guardar Cambios</span>}
+                  {!uploading && !isEditing && <span><Plus size={16} style={{ display: 'inline', verticalAlign: 'middle' }} /> Agregar</span>}
                 </button>
                 {isEditing && (
                   <button type="button" className="btn-outline" onClick={handleCancel}>

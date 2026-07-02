@@ -16,7 +16,7 @@ const ProductDetail = () => {
   const [activeTab, setActiveTab] = useState('description');
   const [selectedVariant, setSelectedVariant] = useState(null);
 
-  const product = products.find(p => p.id === id);
+  const product = products.find(p => p.id.toString() === id);
 
   useEffect(() => {
     if (product) {
