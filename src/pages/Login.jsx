@@ -11,17 +11,22 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   
-  const { login } = useAuth();
+  const { login, register } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     
-    // Si es admin, no importa si está en registro o login, intentamos loguear
+    // Si es admin, intentamos loguear, o si es un cliente normal
     const finalName = isRegistering ? name : (email === 'admin@gmail.com' ? 'Admin' : 'Usuario');
     
-    const result = login(finalName, email, password);
+    let result;
+    if (isRegistering) {
+      result = await register(finalName, email, password);
+    } else {
+      result = await login(finalName, email, password);
+    }
     
     if (result.success) {
       if (email.toLowerCase() === 'admin@gmail.com') {
@@ -30,7 +35,7 @@ const Login = () => {
         navigate('/');
       }
     } else {
-      setError(result.error);
+      setError(result.error || 'Ocurrió un error al procesar tu solicitud.');
     }
   };
 

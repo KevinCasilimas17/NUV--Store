@@ -27,7 +27,7 @@ const AdminPanel = () => {
 
   const [formData, setFormData] = useState(initialForm);
 
-  const categories = ['Labiales', 'Bases', 'Sombras', 'Rubores', 'Skincare', 'Brochas'];
+  const categories = ['Labiales', 'Bases', 'Sombras', 'Rubores', 'Skincare', 'Brochas', 'Ojos'];
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
