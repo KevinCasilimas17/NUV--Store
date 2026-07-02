@@ -99,31 +99,31 @@ const FloatingMascot = () => {
             {message}
           </p>
 
-          {showMenu && (
-            <div className="mascot-menu fade-in">
-              <button onClick={() => handleAction('offers')}>
-                <Percent size={16} /> Ver ofertas
-              </button>
-              <button onClick={() => handleAction('cart')}>
-                <ShoppingBag size={16} /> Ir al carrito
-              </button>
-              <button onClick={() => handleAction('help')}>
-                <HelpCircle size={16} /> Habla por WhatsApp
-              </button>
-            </div>
-          )}
-
-          {!showMenu && (
-            <p className="mascot-hint fade-in" style={{ 
-              fontSize: '0.75rem', 
-              color: 'var(--color-text-light)', 
-              margin: 0,
-              fontStyle: 'italic',
-              textAlign: 'center'
-            }}>
-              Pasa el mouse encima o tócame para ver las opciones ✨
-            </p>
-          )}
+          <div key="mascot-menu-container">
+            {showMenu ? (
+              <div className="mascot-menu fade-in">
+                <button onClick={() => handleAction('offers')}>
+                  <Percent size={16} /> Ver ofertas
+                </button>
+                <button onClick={() => handleAction('cart')}>
+                  <ShoppingBag size={16} /> Ir al carrito
+                </button>
+                <button onClick={() => handleAction('help')}>
+                  <HelpCircle size={16} /> Habla por WhatsApp
+                </button>
+              </div>
+            ) : (
+              <p className="mascot-hint fade-in" style={{ 
+                fontSize: '0.75rem', 
+                color: 'var(--color-text-light)', 
+                margin: 0,
+                fontStyle: 'italic',
+                textAlign: 'center'
+              }}>
+                Pasa el mouse encima o tócame para ver las opciones ✨
+              </p>
+            )}
+          </div>
         </div>
       )}
       
